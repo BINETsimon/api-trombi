@@ -1,0 +1,42 @@
+version: '3'
+services:
+  # MySQL database service
+  trombi-db:
+    image: mysql:5.7
+    container_name: trombi-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    networks:
+      - network
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  # Express.js application service
+  back-trombi:
+    build:
+      context: ./
+    container_name: back-trombi 
+    ports:
+      - "3000:3000"
+    depends_on:
+      - trombi-db
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - network
+    volumes:
+      - ./:/usr/src/app/   
+    restart: always
+    stdin_open: true
+    tty: true
+
+networks:
+  network:
+
+volumes:
+  mysql-data:
