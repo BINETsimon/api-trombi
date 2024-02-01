@@ -11,7 +11,7 @@ const fs = require('fs');
 // Create and Save a new User
 exports.signUp = (req, res) => {
   
-  let user = {
+  let userReq = {
     first_name: req.body.first_name,
     last_name: req.body.last_name,
     email: req.body.email,
@@ -19,7 +19,7 @@ exports.signUp = (req, res) => {
   };
 
   // Password check  
-  if (!user.password.match(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/g)) {
+  if (!userReq.password.match(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/g)) {
     res.status(400).send({
       type: 'error',
       message: 'your password didn\'t match the following rules : Minimum 8 characters, at least one letter, one number and one special character.'
@@ -32,27 +32,27 @@ exports.signUp = (req, res) => {
       console.error('Error while generating salt :', err);
       return;
     } else {
-      bcrypt.hash(user.password, salt, (err, hash) => {
+      bcrypt.hash(userReq.password, salt, (err, hash) => {
         if (err) {
           console.error('Error while hashing password :', err);
           return;
         } else {
-          user.password = hash;
+          userReq.password = hash;
           
           // Save User in the database
-          User.findOne({ where: {email: user.email} })
+          User.findOne({ where: {email: userReq.email} })
             .then((check) => {
               console.log(!check);
               if (check) {
                 res.status(400).send({
                   type: 'error',
-                  message: `${user.email} email adress is already used.`
+                  message: `${userReq.email} email adress is already used.`
                 });
               }else{
-                User.create(user)
+                User.create(userReq)
                   .then(data => {
 
-                    const folderName = `uploads/${user.email}`;
+                    const folderName = `uploads/${userReq.email}`;
                     try {
                       if (!fs.existsSync(folderName)) {
                         fs.mkdirSync(folderName);
@@ -62,9 +62,14 @@ exports.signUp = (req, res) => {
                     }
 
                     const token = auth.generateToken(data.dataValues);
+                    const userRes = {
+                      first_name: data.first_name,
+                      last_name: data.last_name,
+                      email: data.email,
+                    };
 
                     res.send({
-                      data: data,
+                      data: userRes,
                       token: token
                     });
                   })
@@ -96,7 +101,6 @@ exports.logIn = (req, res) => {
 
   User.findOne({ where: {email: req.body.email} })
     .then((data) => {
-      console.log(data.password + ' ' + req.body.password);
       
       bcrypt.compare(req.body.password, data.password, (err, result) => {
         if (err) {
@@ -106,8 +110,14 @@ exports.logIn = (req, res) => {
             const token = auth.generateToken(data.dataValues);
             data.token = token;
                 
+            const user = {
+              first_name: data.first_name,
+              last_name: data.last_name,
+              email: data.email,
+            };
+
             res.send({
-              data: data,
+              data: user,
               token: token
             });
           } else {
@@ -132,13 +142,21 @@ exports.logIn = (req, res) => {
 exports.findMe = (req, res) => {
   const email = req.user.email;
 
-  User.findOne({ where: { email: email } })
+  db.users.findOne({ where: { email: email }})
     .then(data => {
-      res.send(data);
+      const userRes = {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        email: data.email,
+        pictures: data.pictures
+      };
+      
+      res.send(userRes);
     })
     .catch((err) => {
+      console.log(err);
       res.status(500).send({
-        message: err
+        message: err.message || 'Some error occurred.'
       });
     });
 };

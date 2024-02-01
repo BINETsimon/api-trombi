@@ -18,7 +18,7 @@ module.exports = app => {
   router.get('/:fileName', auth.authenticateToken, trombi.findOne);
   
   // Delete a picture with id
-  // router.delete("/:id", trombi.delete);
+  router.delete('/:fileName', auth.authenticateToken, trombi.delete);
   
   app.use('/trombi', router);
 };

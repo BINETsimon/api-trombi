@@ -19,6 +19,11 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.users = require('./user.model.js')(sequelize, Sequelize);
-db.stats = require('./stat.model.js')(sequelize, Sequelize);
+db.pictures = require('./picture.model.js')(sequelize, Sequelize);
+// db.stats = require('./stat.model.js')(sequelize, Sequelize);
+
+// relations
+db.users.hasMany(db.pictures, { as: 'pictures' });
+db.pictures.belongsTo(db.users);
 
 module.exports = db;

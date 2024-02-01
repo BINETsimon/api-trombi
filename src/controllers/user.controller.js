@@ -31,7 +31,8 @@ exports.create = (req, res) => {
       const token = auth.generateToken(user);
       console.log(token);
       user.token = token;
-
+      
+      console.log(data);
       res.send(data);
     })
     .catch(err => {

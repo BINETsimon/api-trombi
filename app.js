@@ -4,7 +4,7 @@ const cors = require('cors');
 const app = express();
 
 var corsOptions = {
-  origin: 'http://localhost:8080'
+  origin: '*'
 };
 
 app.use(cors(corsOptions));
@@ -21,16 +21,14 @@ db.sequelize.sync()
     console.log('Synced db.');
   })
   .catch((err) => {
-
     console.log('Failed to sync db: ' + err.message);
   });
 
 // drop the table if it already exists
 // db.sequelize.sync({ force: true }).then(() => {
-//   console.log("Drop and re-sync db.");
+//   console.log('Drop and re-sync db.');
 // });
 
-require('./src/routes/user.routes')(app);
 require('./src/routes/auth.routes')(app);
 require('./src/routes/trombi.routes')(app);
 
